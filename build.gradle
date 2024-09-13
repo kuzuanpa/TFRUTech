@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
         maven {
             name = "Minecraft Forge"
-            url = "http://files.minecraftforge.net/maven"
+            url = "https://maven.minecraftforge.net/"
         }
          maven {
             name = "sonatype"
@@ -11,57 +11,56 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
-    }
-}
-
-// define the properties file
-ext.configFile = file "build.prop"
-
-configFile.withReader {
-    // read config.  it shall from now on be referenced as simply config or as project.config
-    def prop = new Properties()
-    prop.load(it)
-    project.ext.config = new ConfigSlurper().parse prop
-}
-
-allprojects {
-    apply plugin: 'java'
-    apply plugin: 'forge'
-    apply plugin: 'maven'
-    group = config.group_name
-    version = config.mod_version
-    archivesBaseName = "[${config.minecraft_version}]${config.mod_id}"
-
-    minecraft {
-        version = config.minecraft_version + "-" + config.forge_version
-        if(file('../run').exists()) {
-            runDir = "../run"
-        } else {
-            runDir = ""
+        classpath ('com.anatawa12.forge:ForgeGradle:1.2-1.1.+') {
+            changing = true
         }
     }
 }
 
+
+apply plugin: 'java'
+apply plugin: 'forge'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 repositories {
-    maven { 
-    	// The repo from which to get waila
-        name "Mobius Repo"
-        url "http://mobiusstrip.eu/maven"
+    mavenCentral()
+    maven {
+        name = "forge"
+        url = "https://maven.minecraftforge.net/"
     }
-    maven { 
-    	// the repo from which to get NEI and stuff 
+    maven {
+        name = "gt"
+        url = "https://gregtech.mechaenetia.com/"
+    }
+    maven {
+        name = "sonatype"
+        url = "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+    maven { // the repo from which to get NEI and stuff
         name 'CB Repo'
-        url "http://chickenbones.net/maven/"
+        url "https://chickenbones.net/maven/"
     }
 }
- 
+
+
+version = project.version
+group = project.group
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
+minecraft {
+    version = project.minecraft_version + "-" + project.forge_version
+    runDir = "run"
+}
 dependencies {
 	// Forcing version numbers for everything and using NO-NEI WAILA since the "transitive dependency resolution (gradle magic)" is currently borked.
-	compile "codechicken:CodeChickenCore:1.7.10-1.0.4.35:dev"
-	compile "codechicken:CodeChickenLib:1.7.10-1.1.3.127:dev"
-	compile "codechicken:NotEnoughItems:1.7.10-1.0.4.95:dev"
-	compile "mcp.mobius.waila:Waila:1.5.11-RC2-NONEI_1.7.10"
+    implementation "codechicken:CodeChickenLib:1.7.10-1.1.3.140:dev"
+    implementation "codechicken:CodeChickenCore:1.7.10-1.0.7.47:dev"
+    implementation "codechicken:NotEnoughItems:1.7.10-1.0.5.120:dev"
+    implementation "mcp.mobius.waila:Waila:1.5.10_1.7.10:dev"
 }
 
 sourceSets {
@@ -91,30 +90,16 @@ task sourceJar(type: Jar) {
 
 tasks.build.dependsOn('sourceJar', 'deobfJar')
 
-dependencies {
-    // Copy "[1.7.10]TerraFirmaCraft-deobf-0.79.0.jar" file into the ./libs directory
-}
 
 processResources {
-	// First we just copy in the mcmod.info file
-	from(sourceSets.main.resources.srcDirs) {
-        include '**/*.info'
-        include '**/*.prop'
+    // This will ensure that this task is redone when the versions change.
+    inputs.property "mod_version", project.version
+    inputs.property "tfc_version", project.tfc_version
+    inputs.property "minecraft_version", project.minecraft.version
 
-        // replaces
-        expand ([
-            'mod_version': project.config.mod_version,
-            'tfc_version': project.config.tfc_version,
-            'minecraft_version': project.config.minecraft_version,
-        ])
+    // Replace values in only mcmod.info.
+    filesMatching('mcmod.info') {
+        // Replace version and mcversion.
+        expand 'mod_version':project.version, 'tfc_version': project.tfc_version, 'minecraft_version':project.minecraft.version
     }
-    // copy everything else, that we didn't copy before
-    from(sourceSets.main.resources.srcDirs) {
-        exclude '**/*.info'
-        exclude '**/*.prop'
-    }
-}
-
-task wrapper(type: Wrapper) {
-	gradleVersion = '2.2.1'
 }
