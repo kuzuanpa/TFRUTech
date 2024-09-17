@@ -154,8 +154,7 @@ public class ModRecipes {
 	}
 	
 	private static void registerBarrelRecipes() {
-		barrelManager.addRecipe(new BarrelRecipe(new ItemStack(ModItems.vulcanizingAgents, 1), new FluidStack(ModFluids.LATEX, 100), new ItemStack(
-				ModItems.rubberMix, 6), new FluidStack(ModFluids.LATEX, 100)).setMinTechLevel(0));
+		barrelManager.addRecipe(new BarrelCommonRecipe(new ItemStack(ModItems.vulcanizingAgents, 1), new FluidStack(ModFluids.LATEX, 100), new ItemStack(ModItems.rubberMix, 6), new FluidStack(ModFluids.LATEX, 100)).setMinTechLevel(0));
 	}
 	
 	private static void removeVanilaRecipes() {
@@ -529,8 +528,7 @@ public class ModRecipes {
 	
 	private static void registerPaintRecipe(String resultDye, ItemStack input) {
 		ItemStack out = new ItemStack(ModItems.limePaint, 8, ModUtils.getColorIndex(resultDye));
-		BarrelManager.getInstance().addRecipe(
-				new BarrelRecipe(input, new FluidStack(TFCFluids.LIMEWATER, 100), out, new FluidStack(TFCFluids.LIMEWATER, 100)).setMinTechLevel(0));
+		BarrelManager.getInstance().addRecipe(new BarrelCommonRecipe(input, new FluidStack(TFCFluids.LIMEWATER, 100), out, new FluidStack(TFCFluids.LIMEWATER, 100)).setMinTechLevel(0));
 	}
 	
 	private static void registerPaintRecipe(String resultDye, String[] inputs) {
